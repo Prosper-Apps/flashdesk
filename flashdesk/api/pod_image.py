@@ -81,3 +81,20 @@ def create_image_from_file():
     except Exception as e:
         frappe.throw(str(e))
 
+@frappe.whitelist()
+def create_file_from_image():
+    try:
+        data = frappe.request.get_json()
+        image_name = data.get("image_name")[0]
+        file_name= image_name.replace(":","_")
+        file_name = image_name.replace("/","_")
+        if not image_name:
+            frappe.throw("image_name is required")
+        file_path = os.path.join(frappe.get_site_path("public/files"),file_name+".tar")
+        result = create_tar_file(file_path,image_name)
+        if result == "error":
+            frappe.throw("Problems with creating tar files")
+        return {"status": "success", "message": "Tar file is ready","url":"/public/files/"+image_name.replace(":","_")+".tar"}
+
+    except Exception as e:
+        frappe.throw(str(e))

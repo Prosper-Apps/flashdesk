@@ -162,5 +162,15 @@ def docker_events():
         print(event)
         # frappe.publish_realtime('docker_events', data={'event': event})
 
+def create_tar_file(tar_path,image_name):
+    try:
+        image = client.images.get(image_name)
+        f = open(tar_path,'wb')
+        for chunk in image.save():
+            f.write(chunk)
+        f.close()
+    except docker.errors.APIError as e:
+        print(f"An error occurred: {e}")
+        return "error"
 
 

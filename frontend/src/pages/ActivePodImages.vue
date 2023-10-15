@@ -17,6 +17,7 @@
             style="display: grid; grid-template-columns: 1fr auto auto"
           >
             Image Tags : {{ image.tags }}
+          <div class="flex">
             <button
               @click="runPod(image.image_id)"
               class="bg-green-400 text-white p-2 pl-4 pr-4 hover:bg-green-600 focus:outline focus:ring focus:border-green-400"
@@ -29,6 +30,13 @@
             >
               Remove
             </button>
+            <button
+              @click="exportPod(image.tags)"
+              class="bg-orange-400 text-white p-2 pl-4 pr-4 hover:bg-green-600 focus:outline focus:ring focus:border-green-400"
+            >
+              Export
+            </button>
+          </div>
           </h3>
           <hr class="border-t-2 border-green-400 my-6" />
           <div class="mt-4">
@@ -178,7 +186,48 @@ export default {
       } catch (error) {
         console.error('Error terminating pod image :', error)
       }
-    },
+    },async exportPod(image_name) {
+      try {
+        const response = await fetch(
+          '/api/method/flashdesk.api.pod_image.create_file_from_image',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ image_name: image_name }),
+          }
+        )
+        if (response.ok) {
+          const data = await response.json()
+          console.log(data)
+          this.$swal({
+            toast: true,
+            position: 'bottom-right',
+            showConfirmButton: true,
+            icon: 'success',
+            title: 'Success',
+            text: 'Created file',
+            confirmButtonText:`<a href=${data.message.url}>Download it</a>`,
+          })
+          this.fetchActiveImages()
+        } else {
+          this.$swal({
+            toast: true,
+            position: 'bottom-right',
+            showConfirmButton: false,
+            timer: 3000,
+            icon: 'error',
+            title: 'Error',
+            text: 'Problems in creating the tar file :(',
+            showCancelButton: 'true',
+          })
+          console.error('Cant create tar file', response.statusText)
+        }
+      } catch (error) {
+        console.error('cant create tar file:', error)
+      }
+    }
   },
   components: { SideNavbar },
 }
